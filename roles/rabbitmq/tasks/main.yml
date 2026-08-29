@@ -1,3 +1,30 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for rabbitmq
+
+- name: Install RabbitMQ on Debian systems
+  ansible.builtin.apt:
+    name: rabbitmq-server
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install RabbitMQ on RedHat systems
+  ansible.builtin.dnf:
+    name: rabbitmq-server
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Deploy RabbitMQ configuration
+  ansible.builtin.template:
+    src: rabbitmq.conf.j2
+    dest: /etc/rabbitmq/rabbitmq.conf
+    owner: root
+    group: rabbitmq
+    mode: "0644"
+  notify:
+    - Restart rabbitmq
+
+- name: Enable and start RabbitMQ
+  ansible.builtin.service:
+    name: rabbitmq-server
+    state: started
+    enabled: true
